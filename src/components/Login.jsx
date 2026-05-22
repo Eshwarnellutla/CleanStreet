@@ -246,7 +246,7 @@ function Login({ onLogin, getDashboardRoute }) {
                         theme="filled_blue"
                         shape="pill"
                         text="signin_with"
-                        width="100%"
+                        width="350"
                     />
                 </motion.div>
                 <motion.div 

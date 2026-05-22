@@ -488,7 +488,7 @@ function Signup({ onLogin, getDashboardRoute }) {
                         theme="filled_blue"
                         shape="pill"
                         text="signup_with"
-                        width="100%"
+                        width="350"
                     />
                 </motion.div>
                 
