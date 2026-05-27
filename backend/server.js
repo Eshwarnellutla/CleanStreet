@@ -5,11 +5,11 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const app = express();
-connectDB();// Connect to Databas
+connectDB();// Connect to Database
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
     if (req.method === 'POST') console.log('Body:', req.body);
@@ -23,7 +23,10 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/complaints', require('./routes/complaintRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/zones', require('./routes/zoneRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

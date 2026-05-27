@@ -4,19 +4,19 @@
 
 /* Dashboard Layout */
 .dashboard-layout {
-    background-color: var(--bs-body-bg);
+    background-color: transparent;
     min-height: 100vh;
     position: relative;
 }
 
 .dashboard-content {
-    background-color: var(--bs-body-bg);
+    background-color: transparent;
     z-index: 1;
 }
 
 .main-content {
     padding: 1.5rem;
-    background-color: var(--bs-body-bg);
+    background-color: transparent;
     overflow-x: hidden;
 }
 
@@ -28,7 +28,6 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999;
-    backdrop-filter: blur(2px);
 }
 
 /* Dashboard Container */
@@ -58,9 +57,7 @@
 .dashboard-header {
     margin-bottom: 2.5rem;
     padding: 1.5rem;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: var(--card-bg);
     border-radius: 1rem;
     border: 1px solid var(--bs-border-color);
 }
@@ -69,7 +66,7 @@
     font-size: clamp(1.75rem, 4vw, 2.5rem);
     font-weight: 700;
     margin: 0;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #4285f4, #1a73e8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -178,8 +175,6 @@
     width: 100%;
     padding: 1.5rem;
     background-color: var(--card-bg);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
     border: 2px solid var(--bs-border-color);
     border-radius: 1rem;
     color: var(--bs-body-color);
@@ -195,14 +190,14 @@
 }
 
 .quick-action-btn:hover {
-    border-color: #667eea;
+    border-color: #4285f4;
     color: var(--bs-body-color);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+    box-shadow: 0 8px 24px rgba(66, 133, 244, 0.15);
 }
 
 .quick-action-btn.primary {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #4285f4, #1a73e8);
     color: white;
     border-color: transparent;
 }
@@ -210,14 +205,14 @@
 .quick-action-btn.primary:hover {
     color: white;
     border-color: transparent;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 32px rgba(66, 133, 244, 0.3);
 }
 
 .action-icon {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: linear-gradient(135deg, #4285f4, #1a73e8);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -346,9 +341,9 @@
 /* Focus States */
 .btn-action:focus-visible,
 .quick-action-btn:focus-visible {
-    outline: 2px solid #667eea;
+    outline: 2px solid #4285f4;
     outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.2);
 }
 
 /* High Contrast Mode */
@@ -364,4 +359,55 @@
     .quick-action-btn {
         border-width: 2px;
     }
+}
+
+/* ===============================
+   ADMIN COMMAND CENTER
+   =============================== */
+
+.admin-command-center {
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-command-center .glass-card-premium {
+    border-radius: 24px;
+    background: rgba(var(--bg-card-rgb), 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.admin-command-center h1.display-4 {
+    letter-spacing: -0.05em;
+    font-weight: 800;
+}
+
+.recharts-cartesian-grid-horizontal line {
+    stroke: rgba(255, 255, 255, 0.05);
+}
+
+.recharts-legend-item-text {
+    color: var(--text-secondary) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.recharts-tooltip-wrapper {
+    outline: none !important;
+}
+
+.admin-command-center .rounded-xl {
+    border-radius: 20px;
+}
+
+@keyframes pulse-soft {
+    0% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0.4; transform: scale(1); }
+}
+
+.animate-pulse-soft {
+    animation: pulse-soft 3s ease-in-out infinite;
 }

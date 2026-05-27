@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css'
 import './custom.css'
 import './index.css'
 import { ThemeProvider } from './context/ThemeContext'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 // Add Font Awesome for icons
 const link = document.createElement('link');
@@ -15,10 +16,13 @@ link.rel = 'stylesheet';
 link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
 document.head.appendChild(link);
 
+// Trigger fresh build with environment variables
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>,
 );

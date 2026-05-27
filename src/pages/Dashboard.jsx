@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import StatsSection from '../components/StatsSection';
-import AnalyticsSection from '../components/AnalyticsSection';
-import MapSection from '../components/MapSection';
-import RecentActivity from '../components/RecentActivity';
-import CleanlinessScore from '../components/CleanlinessScore';
-import { Plus, List, Map as MapIcon, AlertTriangle, Users, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import PageWrapper from '../components/PageWrapper';
+import Skeleton from '../components/Skeleton';
+import AdminDashboardView from '../components/AdminDashboardView';
+import CitizenDashboardView from '../components/CitizenDashboardView';
 
 export default function Dashboard() {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         total: 0,
@@ -20,12 +15,14 @@ export default function Dashboard() {
         resolved: 0
     });
     const [activities, setActivities] = useState([]);
+    const [systemActivity, setSystemActivity] = useState([]);
+    const [weeklyData, setWeeklyData] = useState([]);
     const [user, setUser] = useState(null);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                // Fetch stats and recent complaints
+                // Fetch stats and profile
                 const [statsData, profileData] = await Promise.all([
                     api.get('/complaints/stats'),
                     api.get('/auth/profile')
@@ -38,22 +35,33 @@ export default function Dashboard() {
                     resolved: statsData.stats?.resolved || 0
                 });
 
-                // Transform recent complaints into activity format
+                // Transform recent complaints into activity format for Citizen View
                 const recentComplaints = statsData.recent || [];
-                const formattedActivities = recentComplaints.map(complaint => ({
-                    id: complaint.id,
-                    type: complaint.status?.toLowerCase() || 'pending',
-                    message: complaint.title,
-                    time: new Date(complaint.created_at).toLocaleDateString(),
-                    statusText: complaint.status || 'Pending',
-                    category: complaint.type
-                }));
+                const formattedActivities = recentComplaints.map(complaint => {
+                    const status = (complaint.status || 'Pending').toLowerCase();
+                    let iconType = 'pending';
+                    if (status.includes('progress')) iconType = 'progress';
+                    else if (status.includes('resolved')) iconType = 'resolved';
+
+                    return {
+                        id: complaint.id,
+                        type: iconType,
+                        message: complaint.title || 'Untitled Issue',
+                        time: complaint.created_at ? new Date(complaint.created_at).toLocaleDateString(undefined, { 
+                            month: 'short', 
+                            day: 'numeric' 
+                        }) : 'N/A',
+                        statusText: complaint.status || 'Pending',
+                        category: complaint.type || 'Other'
+                    };
+                });
 
                 setActivities(formattedActivities);
+                setSystemActivity(statsData.systemActivity || []);
+                setWeeklyData(statsData.weekly || []);
                 setUser(profileData.user);
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
-                // Set fallback data instead of leaving empty
                 setStats({ total: 0, pending: 0, inProgress: 0, resolved: 0 });
                 setActivities([]);
             } finally {
@@ -62,112 +70,71 @@ export default function Dashboard() {
         };
 
         fetchDashboardData();
-
-        // Auto-refresh every 10 seconds to get latest updates
-        const interval = setInterval(fetchDashboardData, 10000);
-
+        const interval = setInterval(fetchDashboardData, 15000); // 15s refresh
         return () => clearInterval(interval);
     }, []);
 
     if (loading) {
         return (
-            <div className="d-flex align-items-center justify-content-center vh-100">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
+            <PageWrapper className="container-xxl px-4 py-4">
+                <div className="mb-5">
+                    <Skeleton width="400px" height="3.5rem" variant="title" className="mb-2" />
+                    <Skeleton width="300px" height="1.2rem" />
                 </div>
-            </div>
+                
+                <div className="row g-4 mb-5">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="col-md-3">
+                            <div className="skeleton-card" style={{ height: '160px' }}>
+                                <Skeleton width="30%" height="1rem" className="mb-3" />
+                                <Skeleton width="60%" height="2.5rem" className="mb-3" />
+                                <Skeleton width="40%" height="0.8rem" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="row g-4">
+                    <div className="col-lg-8">
+                        <div className="skeleton-card" style={{ height: '400px' }}>
+                             <Skeleton width="100%" height="100%" />
+                        </div>
+                    </div>
+                    <div className="col-lg-4">
+                        <div className="skeleton-card" style={{ height: '400px' }}>
+                             <Skeleton width="40%" height="1.5rem" className="mb-4" />
+                             {[1, 2, 3, 4].map(i => (
+                                 <div key={i} className="mb-4">
+                                     <Skeleton width="100%" height="1rem" className="mb-2" />
+                                     <Skeleton width="60%" height="0.8rem" />
+                                 </div>
+                             ))}
+                        </div>
+                    </div>
+                </div>
+            </PageWrapper>
         );
     }
 
+    const isAdmin = user?.role === 'admin';
+
     return (
-        <PageWrapper className="container-xxl">
-
-            {/* ===== TOP HEADER ROW ===== */}
-            <div className="d-flex align-items-start justify-content-between mb-4">
-
-                {/* LEFT TEXT ONLY (NO LOGO HERE) */}
-                <div>
-                    <h1 className="fw-bold text-body">
-                        Welcome Back, {user ? user.name : 'Citizen'}!
-                    </h1>
-                </div>
-
-                {/* RIGHT ACTION BUTTON */}
-            </div>
-
-            <StatsSection stats={stats} />
-
-            <AnalyticsSection
-                distribution={[
-                    { name: 'Pending', value: stats.pending, color: '#f59e0b' },
-                    { name: 'Progress', value: stats.inProgress, color: '#3b82f6' },
-                    { name: 'Resolved', value: stats.resolved, color: '#10b981' },
-                ]}
-                weekly={[]} // Weekly data can be implemented later
-            />
-
-            <div className="row g-4 mb-4">
-                <div className="col-lg-8">
-                    <MapSection />
-                </div>
-                <div className="col-lg-4 d-flex flex-column gap-4">
-                    <CleanlinessScore score={Math.round((stats.resolved / (stats.total || 1)) * 100)} />
-                    <RecentActivity activities={(activities || []).map(a => {
-                        let statusText = (a.status || 'Pending');
-                        if (statusText === 'In Progress') statusText = 'Progress';
-
-                        return {
-                            id: a.id,
-                            type: statusText.toLowerCase().replace(' ', '-'),
-                            statusText: statusText,
-                            category: a.type || 'Other',
-                            message: a.title || 'Untitled Issue',
-                            time: a.created_at ? new Date(a.created_at).toLocaleDateString() : 'N/A'
-                        };
-                    })} />
-                </div>
-            </div>
-
-            {/* ===== QUICK ACTIONS (MOBILE) ===== */}
-            <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 1 }}
-                className="row row-cols-3 g-3 d-lg-none"
-            >
-                <div>
-                    <button className="btn btn-white w-100 h-100 p-3 shadow-sm rounded-xl">
-                        <div className="mx-auto w-10 h-10 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center mb-2">
-                            <List className="w-5 h-5 text-primary" />
-                        </div>
-                        <span className="small fw-medium text-body-secondary">
-                            View All
-                        </span>
-                    </button>
-                </div>
-
-                <div>
-                    <button className="btn btn-white w-100 h-100 p-3 shadow-sm rounded-xl">
-                        <div className="mx-auto w-10 h-10 bg-success-subtle rounded-circle d-flex align-items-center justify-content-center mb-2">
-                            <MapIcon className="w-5 h-5 text-success" />
-                        </div>
-                        <span className="small fw-medium text-body-secondary">
-                            Map View
-                        </span>
-                    </button>
-                </div>
-
-                <div>
-                    <button className="btn btn-white w-100 h-100 p-3 shadow-sm rounded-xl">
-                        <div className="mx-auto w-10 h-10 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center mb-2">
-                            <Plus className="w-5 h-5 text-primary" />
-                        </div>
-                        <span className="small fw-medium text-body-secondary">
-                            Report
-                        </span>
-                    </button>
-                </div>
-            </motion.div>
+        <PageWrapper className="container-xxl px-4 py-4 overflow-hidden">
+            {isAdmin ? (
+                <AdminDashboardView 
+                    stats={stats} 
+                    weeklyData={weeklyData} 
+                    systemActivity={systemActivity}
+                    user={user} 
+                />
+            ) : (
+                <CitizenDashboardView 
+                    stats={stats} 
+                    activities={activities} 
+                    weeklyData={weeklyData} 
+                    user={user} 
+                />
+            )}
         </PageWrapper>
     );
 }
